@@ -82,12 +82,15 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
                                                 </div>
                                             ) : // Fallback to the original iconClasses if the logo is not defined
                                             p.iconClasses ? (
+                                                <>
                                                 <div className={"h-6 w-6"}>
                                                     <i
                                                         className={clsx(kcClsx("kcCommonLogoIdP"), p.iconClasses, `text-provider-${p.alias}`)}
                                                         aria-hidden="true"
                                                     ></i>
                                                 </div>
+                                                <div className={"h-6 mx-1 text-lg"}>{p.displayName || p.alias}</div>
+                                                </>
                                             ) : (
                                                 <div className="h-6 mx-1 pt-1 font-bold">{p.displayName || p.alias}</div>
                                             )}
