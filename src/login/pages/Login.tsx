@@ -77,9 +77,12 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
                                             href={p.loginUrl}
                                         >
                                             {providerLogos[p.alias] ? (
+                                                <>
                                                 <div className={"h-6 w-6"}>
                                                     <img src={providerLogos[p.alias]} alt={`${p.displayName} logo`} className={"h-full w-auto"} />
                                                 </div>
+                                                <div className={"h-6 mx-1 text-lg"}>{p.displayName || p.alias}</div>
+                                                </>
                                             ) : // Fallback to the original iconClasses if the logo is not defined
                                             p.iconClasses ? (
                                                 <>
