@@ -21,12 +21,22 @@ export default function LoginOtp(props: PageProps<Extract<KcContext, { pageId: "
     const inputRef = useRef<HTMLInputElement[]>(Array(otpLength).fill(null));
 
     const [otpValues, setOtpValues] = useState<string[]>(Array(otpLength).fill(""));
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    const [selectedCredentialId, setSelectedCredentialId] = useState<string>(
+        otpLogin.selectedCredentialId ?? otpLogin.userOtpCredentials[0]?.id ?? ""
+    );
 
     useEffect(() => {
-        if (otpValues.every(Boolean)) {
+        if (otpValues.every(Boolean) && !isSubmitting) {
+            setIsSubmitting(true);
             (document.getElementById("kc-otp-login-form") as HTMLFormElement)?.submit();
         }
-    }, [otpValues]);
+    }, [otpValues, isSubmitting]);
+
+    // Prevent Enter key from submitting prematurely
+    const handleFormKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+        if (e.key === "Enter") e.preventDefault();
+    };
 
     const handleInput = (index: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
         const target = e.target as HTMLInputElement;
@@ -97,6 +107,15 @@ export default function LoginOtp(props: PageProps<Extract<KcContext, { pageId: "
         }
     };
 
+    //  Handle form submit safely
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        if (isSubmitting) {
+            e.preventDefault(); // block double submission
+            return;
+        }
+        setIsSubmitting(true);
+    };
+
     return (
         <Template
             kcContext={kcContext}
@@ -106,8 +125,54 @@ export default function LoginOtp(props: PageProps<Extract<KcContext, { pageId: "
             displayMessage={!messagesPerField.existsError("totp")}
             headerNode={msg("doLogIn")}
         >
-            <form id="kc-otp-login-form" className={kcClsx("kcFormClass")} action={url.loginAction} method="post">
-                {otpLogin.userOtpCredentials.length > 1 && <div className={kcClsx("kcFormGroupClass")}></div>}
+            <form
+                onKeyDown={handleFormKeyDown}
+                onSubmit={handleSubmit}
+                id="kc-otp-login-form"
+                className={kcClsx("kcFormClass")}
+                action={url.loginAction}
+                method="post"
+            >
+                {otpLogin.userOtpCredentials.length > 1 && (
+                    <div className={kcClsx("kcFormGroupClass")}>
+                        <div className={clsx(kcClsx("kcLabelWrapperClass"), "text-center font-bold text-lg p-4")}>
+                            <label className={kcClsx("kcLabelClass")}>
+                                {msg("loginChooseAuthenticator")}
+                            </label>
+                        </div>
+                        <div className="flex flex-col gap-2 px-4 pb-2">
+                            {otpLogin.userOtpCredentials.map(credential => (
+                                <label
+                                    key={credential.id}
+                                    className={clsx(
+                                        "flex items-center gap-3 cursor-pointer rounded-lg border px-4 py-3 transition-colors",
+                                        selectedCredentialId === credential.id
+                                            ? "border-primary-500 bg-primary-50 text-primary-700"
+                                            : "border-secondary-200 bg-white text-secondary-700 hover:border-primary-300 hover:bg-primary-50/50"
+                                    )}
+                                >
+                                    <input
+                                        type="radio"
+                                        name="selectedCredentialId"
+                                        value={credential.id}
+                                        checked={selectedCredentialId === credential.id}
+                                        onChange={() => setSelectedCredentialId(credential.id)}
+                                        className="accent-primary-600 h-4 w-4 shrink-0"
+                                    />
+                                    <span className="text-sm font-medium">{credential.userLabel}</span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {otpLogin.userOtpCredentials.length <= 1 && (
+                    <input
+                        type="hidden"
+                        name="selectedCredentialId"
+                        value={selectedCredentialId}
+                    />
+                )}
 
                 <div className={kcClsx("kcFormGroupClass")}>
                     <div className={clsx(kcClsx("kcLabelWrapperClass"), "text-center font-bold text-lg p-4")}>
@@ -167,6 +232,7 @@ export default function LoginOtp(props: PageProps<Extract<KcContext, { pageId: "
                     </div>
                     <div id="kc-form-buttons" className={kcClsx("kcFormButtonsClass")}>
                         <input
+                            disabled={isSubmitting}
                             className={clsx(
                                 kcClsx("kcButtonClass", "kcButtonPrimaryClass", "kcButtonBlockClass", "kcButtonLargeClass"),
                                 "rounded-md bg-primary-600 text-white focus:ring-primary-600 hover:bg-primary-700 px-4 py-2 text-sm flex justify-center relative w-full focus:outline-none focus:ring-2 focus:ring-offset-2"

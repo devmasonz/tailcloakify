@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useReducer } from "react";
+import { Fragment, useEffect, useMemo, useReducer } from "react";
 import { assert } from "keycloakify/tools/assert";
 import type { KcClsx } from "keycloakify/login/lib/kcClsx";
 import {
@@ -27,9 +27,122 @@ export default function UserProfileFormFields(props: UserProfileFormFieldsProps<
         doMakeUserConfirmPassword
     });
 
+    const isRegistrationUrlPrefillEnabled = kcContext.properties["TAILCLOAKIFY_ENABLE_REGISTRATION_URL_PREFILL"]?.toUpperCase() === "TRUE";
+
+    const registrationUrlPrefillValues = useMemo(() => {
+        if (!isRegistrationUrlPrefillEnabled || typeof window === "undefined") {
+            return {} as Record<string, string[]>;
+        }
+
+        const searchParams = new URLSearchParams(window.location.search);
+        const valuesByFieldName: Record<string, string[]> = {};
+
+        for (const key of new Set(searchParams.keys())) {
+            valuesByFieldName[key] = searchParams.getAll(key).filter(value => value !== "");
+        }
+
+        const rawLoginHint = searchParams.get("login_hint");
+
+        if (rawLoginHint !== null) {
+            try {
+                const parsed = JSON.parse(rawLoginHint);
+
+                if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
+                    for (const [key, value] of Object.entries(parsed)) {
+                        if (typeof value === "string" && value.trim() !== "") {
+                            valuesByFieldName[key] = [value];
+                        }
+
+                        if (Array.isArray(value)) {
+                            const values = value.filter(item => typeof item === "string" && item.trim() !== "") as string[];
+
+                            if (values.length !== 0) {
+                                valuesByFieldName[key] = values;
+                            }
+                        }
+                    }
+
+                    // Avoid using serialized JSON as username/email alias fallback.
+                    delete valuesByFieldName.login_hint;
+                }
+            } catch {
+                // Non-JSON login_hint remains supported as alias for username/email.
+            }
+        }
+
+        return valuesByFieldName;
+    }, [isRegistrationUrlPrefillEnabled]);
+
     useEffect(() => {
         onIsFormSubmittableValueChange(isFormSubmittable);
     }, [isFormSubmittable]);
+
+    useEffect(() => {
+        if (!isRegistrationUrlPrefillEnabled) {
+            return;
+        }
+
+        const toSnakeCase = (value: string) =>
+            value
+                .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
+                .replace(/[\s-]+/g, "_")
+                .toLowerCase();
+
+        const getPrefillValues = (fieldName: string) => {
+            const values = registrationUrlPrefillValues[toSnakeCase(fieldName)] ?? [];
+
+            if (values.length !== 0) {
+                return values;
+            }
+
+            // Keep login_hint as alias for username and email fields.
+            if (fieldName === "username" || fieldName === "email") {
+                return registrationUrlPrefillValues.login_hint ?? [];
+            }
+
+            return [];
+        };
+
+        formFieldStates.forEach(({ attribute, valueOrValues }) => {
+            if (attribute.readOnly) {
+                return;
+            }
+
+            if (attribute.name === "password" || attribute.name === "password-confirm") {
+                return;
+            }
+
+            const prefillValues = getPrefillValues(attribute.name);
+
+            if (prefillValues.length === 0) {
+                return;
+            }
+
+            if (valueOrValues instanceof Array) {
+                if (valueOrValues.some(value => value.trim() !== "")) {
+                    return;
+                }
+
+                dispatchFormAction({
+                    action: "update",
+                    name: attribute.name,
+                    valueOrValues: prefillValues
+                });
+
+                return;
+            }
+
+            if (valueOrValues.trim() !== "") {
+                return;
+            }
+
+            dispatchFormAction({
+                action: "update",
+                name: attribute.name,
+                valueOrValues: prefillValues[0]
+            });
+        });
+    }, [dispatchFormAction, formFieldStates, isRegistrationUrlPrefillEnabled, registrationUrlPrefillValues]);
 
     const groupNameRef = { current: "" };
 
