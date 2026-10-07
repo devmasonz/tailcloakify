@@ -7,6 +7,9 @@ const { useI18n, ofTypeI18n } = i18nBuilder
     .withThemeName<ThemeName>()
     .withCustomTranslations({
         en: {
+            continueWithProvider: "Continue with {0}",
+            signInWithPassword: "Sign in with password",
+            loginMethodSeparator: "or",
             footerImprintTitle: "Imprint",
             footerDataProtectionTitle: "Data Protection",
             footerCookiePreferencesTitle: "Cookie Preferences",
@@ -27,6 +30,9 @@ const { useI18n, ofTypeI18n } = i18nBuilder
             loginOtpOneTimeLabel: "Please Input your One-time code",
         },
         de: {
+            continueWithProvider: "Weiter mit {0}",
+            signInWithPassword: "Mit Passwort anmelden",
+            loginMethodSeparator: "oder",
             footerImprintTitle: "Impressum",
             footerDataProtectionTitle: "Datenschutz",
             footerCookiePreferencesTitle: "Cookie Einstellungen",
@@ -43,6 +49,9 @@ const { useI18n, ofTypeI18n } = i18nBuilder
             loginOtpOneTimeLabel: "Bitte geben Sie Ihren Einmalcode"
         },
         fr: {
+            continueWithProvider: "Continuer avec {0}",
+            signInWithPassword: "Se connecter avec un mot de passe",
+            loginMethodSeparator: "ou",
             footerImprintTitle: "Mentions Légales",
             footerDataProtectionTitle: "Protection des Données",
             footerCookiePreferencesTitle: "Paramètres des Cookies",
@@ -59,6 +68,9 @@ const { useI18n, ofTypeI18n } = i18nBuilder
             loginOtpOneTimeLabel: "Veuillez saisir votre Code à usage unique"
         },
         it: {
+            continueWithProvider: "Continua con {0}",
+            signInWithPassword: "Accedi con password",
+            loginMethodSeparator: "oppure",
             footerImprintTitle: "Impronta",
             footerDataProtectionTitle: "Informativa sulla Privacy",
             footerCookiePreferencesTitle: "Impostazioni dei Cookie",
@@ -75,6 +87,9 @@ const { useI18n, ofTypeI18n } = i18nBuilder
             loginOtpOneTimeLabel: "Si prega di inserire il tuo one-time password"
         },
         es: {
+            continueWithProvider: "Continuar con {0}",
+            signInWithPassword: "Iniciar sesión con contraseña",
+            loginMethodSeparator: "o",
             footerImprintTitle: "Aviso Legal",
             footerDataProtectionTitle: "Protección de Datos",
             footerCookiePreferencesTitle: "Preferencias de Cookies",
@@ -91,6 +106,9 @@ const { useI18n, ofTypeI18n } = i18nBuilder
             loginOtpOneTimeLabel: "Por favor ingrese su Código de un solo uso"
         },
         cs: {
+            continueWithProvider: "Pokračovat s {0}",
+            signInWithPassword: "Přihlásit se heslem",
+            loginMethodSeparator: "nebo",
             footerImprintTitle: "Tiráž",
             footerDataProtectionTitle: "Ochrana Osobních Údajů",
             footerCookiePreferencesTitle: "Nastavení Cookies",
@@ -107,6 +125,9 @@ const { useI18n, ofTypeI18n } = i18nBuilder
             loginOtpOneTimeLabel: "Zadejte prosím svůj jednorázový kód"
         },
         nl: {
+            continueWithProvider: "Doorgaan met {0}",
+            signInWithPassword: "Inloggen met wachtwoord",
+            loginMethodSeparator: "of",
             footerImprintTitle: "Colofon",
             footerDataProtectionTitle: "Gegevensbescherming",
             footerCookiePreferencesTitle: "Cookievoorkeuren",
@@ -123,6 +144,9 @@ const { useI18n, ofTypeI18n } = i18nBuilder
             loginOtpOneTimeLabel: "Voer uw eenmalige code in"
         },
         pl: {
+            continueWithProvider: "Kontynuuj z {0}",
+            signInWithPassword: "Zaloguj się hasłem",
+            loginMethodSeparator: "lub",
             footerImprintTitle: "Nota Prawna",
             footerDataProtectionTitle: "Ochrona Danych",
             footerCookiePreferencesTitle: "Preferencje Plików Cookie",
@@ -139,6 +163,9 @@ const { useI18n, ofTypeI18n } = i18nBuilder
             loginOtpOneTimeLabel: "Proszę wpisać kod jednorazowy"
         },
         ru: {
+            continueWithProvider: "Продолжить с {0}",
+            signInWithPassword: "Войти с паролем",
+            loginMethodSeparator: "или",
             footerImprintTitle: "Выходные Данные",
             footerDataProtectionTitle: "Защита Данных",
             footerCookiePreferencesTitle: "Настройки Файлов Cookie",
@@ -155,6 +182,9 @@ const { useI18n, ofTypeI18n } = i18nBuilder
             loginOtpOneTimeLabel: "Пожалуйста, введите свой одноразовый код"
         },
         sv: {
+            continueWithProvider: "Fortsätt med {0}",
+            signInWithPassword: "Logga in med lösenord",
+            loginMethodSeparator: "eller",
             footerImprintTitle: "Impressum",
             footerDataProtectionTitle: "Dataskydd",
             footerCookiePreferencesTitle: "Cookie-inställningar",

@@ -266,6 +266,62 @@ export const WithOneSocialProvider: Story = {
     )
 };
 
+export const WithGooglePrimarySignIn: Story = {
+    render: () => (
+        <KcPageStory
+            kcContext={{
+                realm: {
+                    displayName: "Draw Motive",
+                    displayNameHtml: "Draw Motive",
+                    loginWithEmailAllowed: true,
+                    registrationEmailAsUsername: true,
+                    registrationAllowed: false,
+                    rememberMe: false,
+                    resetPasswordAllowed: false
+                },
+                social: {
+                    displayInfo: true,
+                    providers: [
+                        {
+                            loginUrl: "google",
+                            alias: "google",
+                            providerId: "google",
+                            displayName: "Continue with Google",
+                            iconClasses: "fa fa-google"
+                        }
+                    ]
+                }
+            }}
+        />
+    )
+};
+
+export const WithAliasedGoogleProvider: Story = {
+    render: () => (
+        <KcPageStory
+            kcContext={{
+                social: {
+                    displayInfo: true,
+                    providers: [
+                        {
+                            loginUrl: "github",
+                            alias: "github",
+                            providerId: "github",
+                            displayName: "GitHub"
+                        },
+                        {
+                            loginUrl: "google-workspace",
+                            alias: "google-workspace",
+                            providerId: "google",
+                            displayName: "Google"
+                        }
+                    ]
+                }
+            }}
+        />
+    )
+};
+
 export const WithTwoSocialProviders: Story = {
     render: args => (
         <KcPageStory

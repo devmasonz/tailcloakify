@@ -25,6 +25,11 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
     const [isLoginButtonDisabled, setIsLoginButtonDisabled] = useState(false);
 
     const providerLogos = useProviderLogos();
+    const socialProviders = [...(social?.providers ?? [])].sort(
+        (a, b) => Number(b.providerId === "google" || b.alias === "google") - Number(a.providerId === "google" || a.alias === "google")
+    );
+    const hasSocialProviders = socialProviders.length !== 0;
+    const showPasswordForm = realm.password && kcContext.properties["TAILCLOAKIFY_HIDE_LOGIN_FORM"]?.toUpperCase() !== "TRUE";
 
     const webAuthnButtonId = "authenticateWebAuthnButton";
 
@@ -45,7 +50,6 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
                         <span>
                             {msg("noAccount")}{" "}
                             <a
-                                tabIndex={8}
                                 href={url.registrationUrl}
                                 className={"text-primary-600 hover:text-primary-500 inline-flex no-underline hover:no-underline"}
                             >
@@ -55,74 +59,50 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
                     </div>
                 </div>
             }
-            socialProvidersNode={
-                <>
-                    {realm.password && social?.providers !== undefined && social.providers.length !== 0 && (
-                        <div id="kc-social-providers" className={kcClsx("kcFormSocialAccountSectionClass")}>
-                            {kcContext.properties["TAILCLOAKIFY_HIDE_LOGIN_FORM"]?.toUpperCase() !== "TRUE" ? (
-                                <>
-                                    <hr />
-                                    <h2 className={"pt-4 separate text-secondary-600 text-sm"}>{msg("identity-provider-login-label")}</h2>
-                                </>
-                            ) : (
-                                ""
-                            )}
-                            <ul
-                                className={clsx(
-                                    kcClsx("kcFormSocialAccountListClass", social.providers.length > 3 && "kcFormSocialAccountListGridClass"),
-                                    "gap-4 grid pt-4",
-                                    social.providers.length === 1
-                                        ? "grid-cols-1"
-                                        : social.providers.length % 3 === 0 && social.providers.length <= 6
-                                          ? "grid-cols-3"
-                                          : social.providers.length % 2 === 0 && social.providers.length <= 6
-                                            ? "grid-cols-2"
-                                            : "grid-cols-4"
-                                )}
-                            >
-                                {social.providers.map((...[p, , providers]) => (
-                                    <li key={p.alias}>
-                                        <a
-                                            id={`social-${p.alias}`}
-                                            className={clsx(
-                                                kcClsx("kcFormSocialAccountListButtonClass", providers.length > 3 && "kcFormSocialAccountGridItem"),
-                                                `border border-secondary-200 flex justify-center py-2 rounded-lg hover:border-opacity-30 hover:bg-provider-${p.alias}/10`
-                                            )}
-                                            style={{ textDecoration: "none" }}
-                                            type="button"
-                                            href={p.loginUrl}
-                                        >
-                                            {providerLogos[p.alias] ? (
-                                                <>
-                                                <div className={"h-6 w-6"}>
-                                                    <img src={providerLogos[p.alias]} alt={`${p.displayName} logo`} className={"h-full w-auto"} />
-                                                </div>
-                                                <div className={"h-6 mx-1 text-lg"}>{p.displayName || p.alias}</div>
-                                                </>
-                                            ) : // Fallback to the original iconClasses if the logo is not defined
-                                            p.iconClasses ? (
-                                                <>
-                                                <div className={"h-6 w-6"}>
-                                                    <i
-                                                        className={clsx(kcClsx("kcCommonLogoIdP"), p.iconClasses, `text-provider-${p.alias}`)}
-                                                        aria-hidden="true"
-                                                    ></i>
-                                                </div>
-                                                <div className={"h-6 mx-1 text-lg"}>{p.displayName || p.alias}</div>
-                                                </>
-                                            ) : (
-                                                <div className="h-6 mx-1 pt-1 font-bold">{p.displayName || p.alias}</div>
-                                            )}
-                                        </a>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-                </>
-            }
         >
-            {kcContext.properties["TAILCLOAKIFY_HIDE_LOGIN_FORM"]?.toUpperCase() !== "TRUE" ? (
+            {hasSocialProviders && (
+                <div id="kc-social-providers" className={clsx(kcClsx("kcFormSocialAccountSectionClass"), "mb-6")}>
+                    <ul className={clsx(kcClsx("kcFormSocialAccountListClass"), "m-0 flex list-none flex-col gap-3 p-0")}>
+                        {socialProviders.map(p => {
+                            const isGoogle = p.providerId === "google" || p.alias === "google";
+                            const logo = providerLogos[p.providerId] ?? providerLogos[p.alias];
+
+                            return (
+                                <li key={p.alias}>
+                                    <a
+                                        id={"social-" + p.alias}
+                                        className={clsx(
+                                            kcClsx("kcFormSocialAccountListButtonClass"),
+                                            "relative flex min-h-[48px] w-full items-center justify-center gap-3 rounded-md border px-4 py-2.5 text-sm font-medium no-underline transition-colors hover:no-underline focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2",
+                                            isGoogle
+                                                ? "border-primary-600 bg-primary-600 text-white shadow-sm hover:border-primary-700 hover:bg-primary-700 hover:text-white"
+                                                : "border-secondary-200 bg-white text-secondary-700 hover:bg-secondary-50 hover:text-secondary-900"
+                                        )}
+                                        href={p.loginUrl}
+                                    >
+                                        {logo ? (
+                                            <span
+                                                className={clsx(
+                                                    "flex shrink-0 items-center justify-center",
+                                                    isGoogle ? "h-8 w-8 rounded bg-white" : "h-6 w-6"
+                                                )}
+                                                aria-hidden="true"
+                                            >
+                                                <img src={logo} alt="" className="h-5 w-5 object-contain" />
+                                            </span>
+                                        ) : p.iconClasses ? (
+                                            <i className={clsx(kcClsx("kcCommonLogoIdP"), p.iconClasses, "text-xl")} aria-hidden="true" />
+                                        ) : null}
+                                        <span>{msg("continueWithProvider", isGoogle ? "Google" : p.displayName || p.alias)}</span>
+                                    </a>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                    {showPasswordForm && <div className="separate mt-6 text-sm text-secondary-500">{msg("loginMethodSeparator")}</div>}
+                </div>
+            )}
+            {showPasswordForm && (
                 <div id="kc-form">
                     <div id="kc-form-wrapper" className={"space-y-4"}>
                         {realm.password && (
@@ -138,7 +118,10 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
                             >
                                 {!usernameHidden && (
                                     <div className={kcClsx("kcFormGroupClass")}>
-                                        <label htmlFor="username" className={clsx(kcClsx("kcLabelClass"), "sr-only")}>
+                                        <label
+                                            htmlFor="username"
+                                            className={clsx(kcClsx("kcLabelClass"), "block text-sm font-medium text-secondary-700")}
+                                        >
                                             {!realm.loginWithEmailAllowed
                                                 ? msg("username")
                                                 : !realm.registrationEmailAsUsername
@@ -146,23 +129,15 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
                                                   : msg("email")}
                                         </label>
                                         <input
-                                            placeholder={
-                                                !realm.loginWithEmailAllowed
-                                                    ? msgStr("username")
-                                                    : !realm.registrationEmailAsUsername
-                                                      ? msgStr("usernameOrEmail")
-                                                      : msgStr("email")
-                                            }
-                                            tabIndex={2}
                                             id="username"
                                             className={clsx(
                                                 kcClsx("kcInputClass"),
-                                                "block focus:outline-none border-secondary-200 mt-1 rounded-md w-full focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50 sm:text-sm"
+                                                "block min-h-[44px] border border-secondary-200 mt-1 rounded-md w-full px-3 py-2 text-sm focus:outline-none focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50"
                                             )}
                                             name="username"
                                             defaultValue={login.username ?? ""}
                                             type="text"
-                                            autoFocus
+                                            autoFocus={!hasSocialProviders || messagesPerField.existsError("username", "password")}
                                             autoComplete="username"
                                             aria-invalid={messagesPerField.existsError("username", "password")}
                                         />
@@ -180,17 +155,18 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
                                 )}
 
                                 <div className={clsx(kcClsx("kcFormGroupClass"), "relative")}>
-                                    <label htmlFor="password" className={clsx(kcClsx("kcLabelClass"), "sr-only")}>
+                                    <label
+                                        htmlFor="password"
+                                        className={clsx(kcClsx("kcLabelClass"), "block text-sm font-medium text-secondary-700")}
+                                    >
                                         {msg("password")}
                                     </label>
                                     <PasswordWrapper kcClsx={kcClsx} i18n={i18n} passwordInputId="password">
                                         <input
-                                            placeholder="Password"
-                                            tabIndex={3}
                                             id="password"
                                             className={clsx(
                                                 kcClsx("kcInputClass"),
-                                                "block focus:outline-none border-secondary-200 mt-1 rounded-md w-full focus:ring focus:ring-primary-200 focus:border-primary-300 focus:ring-opacity-50 sm:text-sm"
+                                                "block min-h-[44px] border border-secondary-200 mt-1 rounded-md w-full pl-3 pr-12 py-2 text-sm focus:outline-none focus:ring focus:ring-primary-200 focus:border-primary-300 focus:ring-opacity-50"
                                             )}
                                             name="password"
                                             type="password"
@@ -210,61 +186,61 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
                                     )}
                                 </div>
 
-                                <div className={kcClsx("kcFormGroupClass", "kcFormSettingClass")}>
-                                    <div id="kc-form-options">
-                                        {realm.rememberMe && !usernameHidden && (
-                                            <div className="checkbox">
-                                                <label>
-                                                    <input
-                                                        tabIndex={5}
-                                                        id="rememberMe"
-                                                        name="rememberMe"
-                                                        type="checkbox"
-                                                        className={"accent-primary-600"}
-                                                        defaultChecked={!!login.rememberMe}
-                                                    />{" "}
-                                                    {msg("rememberMe")}
-                                                </label>
-                                            </div>
-                                        )}
+                                {((realm.rememberMe && !usernameHidden) || realm.resetPasswordAllowed) && (
+                                    <div className={kcClsx("kcFormGroupClass", "kcFormSettingClass")}>
+                                        <div id="kc-form-options">
+                                            {realm.rememberMe && !usernameHidden && (
+                                                <div className="checkbox">
+                                                    <label>
+                                                        <input
+                                                            id="rememberMe"
+                                                            name="rememberMe"
+                                                            type="checkbox"
+                                                            className={"accent-primary-600"}
+                                                            defaultChecked={!!login.rememberMe}
+                                                        />{" "}
+                                                        {msg("rememberMe")}
+                                                    </label>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className={kcClsx("kcFormOptionsWrapperClass")}>
+                                            {realm.resetPasswordAllowed && (
+                                                <span>
+                                                    <a
+                                                        href={url.loginResetCredentialsUrl}
+                                                        className={
+                                                            "text-primary-600 hover:text-primary-500 inline-flex no-underline hover:no-underline"
+                                                        }
+                                                    >
+                                                        {msg("doForgotPassword")}
+                                                    </a>
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
-                                    <div className={kcClsx("kcFormOptionsWrapperClass")}>
-                                        {realm.resetPasswordAllowed && (
-                                            <span>
-                                                <a
-                                                    tabIndex={6}
-                                                    href={url.loginResetCredentialsUrl}
-                                                    className={"text-primary-600 hover:text-primary-500 inline-flex no-underline hover:no-underline"}
-                                                >
-                                                    {msg("doForgotPassword")}
-                                                </a>
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
+                                )}
 
-                                <div id="kc-form-buttons" className={clsx(kcClsx("kcFormGroupClass"), "flex flex-col pt-4 space-y-2")}>
+                                <div id="kc-form-buttons" className={clsx(kcClsx("kcFormGroupClass"), "flex flex-col space-y-2")}>
                                     <input type="hidden" id="id-hidden-input" name="credentialId" value={auth.selectedCredential} />
                                     <input
-                                        tabIndex={7}
                                         disabled={isLoginButtonDisabled}
-                                        className={
-                                            "rounded-md bg-primary-600 text-white focus:ring-primary-600 hover:bg-primary-700 px-4 py-2 text-sm flex justify-center relative w-full focus:outline-none focus:ring-2 focus:ring-offset-2"
-                                        }
+                                        className={clsx(
+                                            "min-h-[44px] rounded-md border px-4 py-2 text-sm font-medium flex justify-center relative w-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+                                            hasSocialProviders
+                                                ? "border-secondary-300 bg-white text-secondary-700 hover:bg-secondary-50 focus:ring-secondary-400"
+                                                : "border-primary-600 bg-primary-600 text-white focus:ring-primary-600 hover:bg-primary-700"
+                                        )}
                                         name="login"
                                         id="kc-login"
                                         type="submit"
-                                        value={msgStr("doLogIn")}
+                                        value={msgStr("signInWithPassword")}
                                     />
                                 </div>
                             </form>
                         )}
-                        {/*<div className={"pt-4 separate text-secondary-600 text-sm"}>Or sign in with</div>*/}
-                        {/*<div className={"gap-4 grid grid-cols-3"}></div>*/}
                     </div>
                 </div>
-            ) : (
-                ""
             )}
             {enableWebAuthnConditionalUI && (
                 <>
@@ -321,7 +297,7 @@ function PasswordWrapper(props: { kcClsx: KcClsx; i18n: I18n; passwordInputId: s
             {children}
             <button
                 type="button"
-                className={"absolute text-secondary-400 right-3 top-1 text-xl"}
+                className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-md text-xl text-secondary-400 hover:text-secondary-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-600"
                 aria-label={msgStr(isPasswordRevealed ? "hidePassword" : "showPassword")}
                 aria-controls={passwordInputId}
                 onClick={toggleIsPasswordRevealed}
